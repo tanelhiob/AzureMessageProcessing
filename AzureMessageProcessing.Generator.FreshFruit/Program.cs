@@ -112,7 +112,7 @@ namespace AzureMessageProcessing.Generator.FreshFruit
                 {
                     Name = Name,
                     CountryOfOrigin = countries[random.Next(countries.Length - 1)],
-                    IsFreeTrade = random.NextDouble() > 0.5,
+                    IsFairTrade = random.NextDouble() > 0.5,
                     CrateWeight = CrateWeight
                 };
             }

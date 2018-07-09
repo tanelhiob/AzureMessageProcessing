@@ -10,6 +10,6 @@ namespace AzureMessageProcessing.Core
 
         public string CountryOfOrigin { get; set; }
 
-        public bool IsFreeTrade { get; set; }
+        public bool IsFairTrade { get; set; }
     }
 }
