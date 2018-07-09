@@ -1,10 +1,10 @@
-﻿namespace AzureMessageProcessing.Generator.FreshFruit
+﻿namespace AzureMessageProcessing.Generator.DnDCharacters
 {
     public class Program
     {
         static void Main(string[] args)
         {
-            var generator = new FruitGenerator(200);
+            var generator = new DnDGenerator(100);
 
             generator.Run();
         }
