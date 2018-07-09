@@ -7,7 +7,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AzureMessageProcessing.Proc
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AzureMessageProcessing.Core", "AzureMessageProcessing.Core\AzureMessageProcessing.Core.csproj", "{B686701B-2DCF-458A-8E72-4FBA44626729}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AzureMessageProcessing.Generator.FreshFruit", "AzureMessageProcessing.Generator.FreshFruit\AzureMessageProcessing.Generator.FreshFruit.csproj", "{6E076C62-F4ED-4D0B-81D7-A171EFB0D373}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AzureMessageProcessing.Generator.FreshFruit", "AzureMessageProcessing.Generator.FreshFruit\AzureMessageProcessing.Generator.FreshFruit.csproj", "{6E076C62-F4ED-4D0B-81D7-A171EFB0D373}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
