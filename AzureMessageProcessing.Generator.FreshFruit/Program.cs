@@ -1,4 +1,5 @@
 ﻿using AzureMessageProcessing.Core;
+using AzureMessageProcessing.Core.Models;
 using Microsoft.WindowsAzure.Storage;
 using Microsoft.WindowsAzure.Storage.Blob;
 using Microsoft.WindowsAzure.Storage.Queue;

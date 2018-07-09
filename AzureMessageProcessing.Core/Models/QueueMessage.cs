@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace AzureMessageProcessing.Core
+namespace AzureMessageProcessing.Core.Models
 {
     public class QueueMessage
     {
