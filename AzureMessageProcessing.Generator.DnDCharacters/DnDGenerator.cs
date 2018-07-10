@@ -54,6 +54,7 @@ namespace AzureMessageProcessing.Generator.DnDCharacters
                 yield return new Character()
                 {
                     Name = string.Join("", Guid.NewGuid().ToString().Where(x => char.IsLetter(x))).FirstLetterToUpperCase(),
+                    Age = random.Next(5, 2000),
                     Race = races[random.Next(races.Length)],
                     Level = level,
                     Class = classes[random.Next(classes.Length)],
