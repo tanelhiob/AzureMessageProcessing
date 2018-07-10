@@ -14,28 +14,39 @@ namespace AzureMessageProcessing.Generator
         private readonly string _storageContainerName = "blob-storage";
         private readonly string _source;
         private readonly int _interval;
+        private readonly int _numberOfItems;
 
-        public BaseGenerator(string source, int interval)
+        public BaseGenerator(string source, int interval, int numberOfItems)
         {
             _source = source;
             _interval = interval;
+            _numberOfItems = numberOfItems;
         }
 
         public void Run()
         {
+            Console.WriteLine($"Starting generator for {_source}");
+            Console.WriteLine($"Generating collection of {_numberOfItems} every {Math.Round(_interval / 1000d, 2)} s");
+
             var queue = GetQueueClient(_queueName);
             var container = GetStorageContainer(_storageContainerName);
+
+            Console.WriteLine("Start generation");
 
             while (true)
             {
                 var step = GenerateStep();
 
-                Console.WriteLine(JsonConvert.SerializeObject(step));
-
                 Console.Write($"Uploading payload message '{step.Id}' to storage... ");
 
                 var blockBlob = container.GetBlockBlobReference(step.Id.ToString());
                 blockBlob.UploadTextAsync(JsonConvert.SerializeObject(step)).Wait();
+
+                //blockBlob.FetchAttributesAsync().Wait();
+
+                //var size = blockBlob.Properties.Length;
+
+                //Console.WriteLine($"Uploaded blob ({size} bytes).");
 
                 Console.WriteLine($"Done.");
 
@@ -66,8 +77,8 @@ namespace AzureMessageProcessing.Generator
 
             var wasCreated = queue.CreateIfNotExistsAsync().Result;
             var msg = wasCreated
-                ? $"- Queue '{queueName}' exists"
-                : $"- Queue '{queueName}' created";
+                ? $"Queue '{queueName}' created"
+                : $"Queue '{queueName}' exists";
             Console.WriteLine(msg);
 
             return queue;
@@ -82,8 +93,8 @@ namespace AzureMessageProcessing.Generator
             var storageContainer = storage.GetContainerReference(containerName);
             var wasCreated = storageContainer.CreateIfNotExistsAsync().Result;
             var msg = wasCreated
-                ? $"- Storage container '{containerName}' exists"
-                : $"- Storage container '{containerName}' created";
+                ? $"Storage container '{containerName}' created"
+                : $"Storage container '{containerName}' exists";
             Console.WriteLine(msg);
 
             return storageContainer;

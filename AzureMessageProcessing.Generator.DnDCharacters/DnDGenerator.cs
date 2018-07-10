@@ -12,7 +12,8 @@ namespace AzureMessageProcessing.Generator.DnDCharacters
     {
         private readonly int _numberOfItems;
 
-        public DnDGenerator(string source, int interval, int numberOfItems) : base(source, interval)
+        public DnDGenerator(string source, int interval, int numberOfItems) 
+            : base(source, interval, numberOfItems)
         {
             _numberOfItems = numberOfItems;
         }

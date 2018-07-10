@@ -9,7 +9,8 @@ namespace AzureMessageProcessing.Generator.FreshFruit
     {
         private readonly int _numberOfItems;
 
-        public FruitGenerator(string source, int interval, int numberOfItems) : base(source, interval)
+        public FruitGenerator(string source, int interval, int numberOfItems) 
+            : base(source, interval, numberOfItems)
         {
             _numberOfItems = numberOfItems;
         }
