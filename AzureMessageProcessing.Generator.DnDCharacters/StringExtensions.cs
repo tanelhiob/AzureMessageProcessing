@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace AzureMessageProcessing.Generator.DnDCharacters
+﻿namespace AzureMessageProcessing.Generator.DnDCharacters
 {
     public static class StringExtensions
     {
@@ -11,7 +9,7 @@ namespace AzureMessageProcessing.Generator.DnDCharacters
         public static string FirstLetterToUpperCase(this string s)
         {
             if (string.IsNullOrEmpty(s))
-                throw new ArgumentException("There is no first letter");
+                return string.Empty;
 
             char[] a = s.ToCharArray();
             a[0] = char.ToUpper(a[0]);
