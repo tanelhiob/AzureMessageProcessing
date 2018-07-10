@@ -1,10 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net;
-using System.Net.Http;
-using System.Text;
 using System.Threading.Tasks;
+using AzureMessageProcessing.Core.Models;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Host;
 using Microsoft.WindowsAzure.Storage.Queue;
@@ -21,44 +19,37 @@ namespace AzureMessageProcessing.Processes
         public string DataSetId { get; set; }
     }
 
-    public class Message
-    {
-        public Guid ContentId { get; set; }
-        public string From { get; set; }
-        public DateTimeOffset Created { get; set; }
-    }
-
     public static class Workers
     {
-        [FunctionName("Hello")]
-        public static async Task<HttpResponseMessage> Hello(
-            [HttpTrigger] HttpRequestMessage request,
-            [Queue("onramp")] CloudQueue queue,
-            [Table("data")] CloudTable table,
-            TraceWriter traceWriter)
-        {
-            var dataSetId = Guid.NewGuid();
+        //[FunctionName("Hello")]
+        //public static async Task<HttpResponseMessage> Hello(
+        //    [HttpTrigger] HttpRequestMessage request,
+        //    [Queue("onramp")] CloudQueue queue,
+        //    [Table("data")] CloudTable table,
+        //    TraceWriter traceWriter)
+        //{
+        //    var dataSetId = Guid.NewGuid();
 
-            var op = new TableBatchOperation
-            {
-                TableOperation.Insert(new Person { RowKey = Guid.NewGuid().ToString(), PartitionKey = string.Empty, FirstName = "Tanel", LastName = "Hiob", Age = 28, DataSetId = dataSetId.ToString() }),
-                TableOperation.Insert(new Person { RowKey = Guid.NewGuid().ToString(), PartitionKey = string.Empty, FirstName = "Liisi", LastName = "Mõtshärg", Age = 26, DataSetId = dataSetId.ToString() })
-            };
+        //    var op = new TableBatchOperation
+        //    {
+        //        TableOperation.Insert(new Person { RowKey = Guid.NewGuid().ToString(), PartitionKey = string.Empty, FirstName = "Tanel", LastName = "Hiob", Age = 28, DataSetId = dataSetId.ToString() }),
+        //        TableOperation.Insert(new Person { RowKey = Guid.NewGuid().ToString(), PartitionKey = string.Empty, FirstName = "Liisi", LastName = "Mõtshärg", Age = 26, DataSetId = dataSetId.ToString() })
+        //    };
 
-            await table.CreateIfNotExistsAsync();
-            await table.ExecuteBatchAsync(op);
+        //    await table.CreateIfNotExistsAsync();
+        //    await table.ExecuteBatchAsync(op);
 
-            var message = new Message
-            {
-                ContentId = dataSetId,
-                Created = DateTimeOffset.Now,
-                From = "Tanel",
-            };
+        //    var message = new Message
+        //    {
+        //        ContentId = dataSetId,
+        //        Created = DateTimeOffset.Now,
+        //        From = "Tanel",
+        //    };
 
-            await queue.AddMessageAsync(new CloudQueueMessage(JsonConvert.SerializeObject(message)));
+        //    await queue.AddMessageAsync(new CloudQueueMessage(JsonConvert.SerializeObject(message)));
 
-            return new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent("Message added to the queue!") };
-        }
+        //    return new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent("Message added to the queue!") };
+        //}
 
         [FunctionName("OnRamp")]
         public static async Task OnRampMessage(
