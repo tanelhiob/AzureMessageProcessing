@@ -4,7 +4,7 @@
     {
         static void Main(string[] args)
         {
-            var generator = new FruitGenerator("FreshFruits", 200);
+            var generator = new FruitGenerator("FreshFruits", interval: 200, numberOfItems: 2000);
 
             generator.Run();
         }

@@ -7,8 +7,11 @@ namespace AzureMessageProcessing.Generator.FreshFruit
 {
     public class FruitGenerator : BaseGenerator
     {
-        public FruitGenerator(string source, int interval) : base(source, interval)
+        private readonly int _numberOfItems;
+
+        public FruitGenerator(string source, int interval, int numberOfItems) : base(source, interval)
         {
+            _numberOfItems = numberOfItems;
         }
 
         public override Step GenerateStep() => new Step
@@ -17,7 +20,7 @@ namespace AzureMessageProcessing.Generator.FreshFruit
             Body = JsonConvert.SerializeObject(GenerateFruitCrates())
         };
 
-        private static IEnumerable<Fruit> GenerateFruitCrates()
+        private IEnumerable<Fruit> GenerateFruitCrates()
         {
             var fruits = new List<(string Name, double CrateWeight)> {
                 ("Apple", 5),
@@ -38,13 +41,13 @@ namespace AzureMessageProcessing.Generator.FreshFruit
             var countries = new string[] { "Colombia", "Brazil", "Kenya", "India", "Indonesia", "Guyana", "Ecuador", "Panama", "Greece", "Italy", "Spain", "Turkey", "China", "Thailand", "Malaysia", "Argentina" };
             var random = new Random();
 
-            for (var i = 0; i < 100; i++)
+            for (var i = 0; i < _numberOfItems; i++)
             {
-                var (Name, CrateWeight) = fruits[random.Next(fruits.Count - 1)];
+                var (Name, CrateWeight) = fruits[random.Next(fruits.Count)];
                 yield return new Fruit
                 {
                     Name = Name,
-                    CountryOfOrigin = countries[random.Next(countries.Length - 1)],
+                    CountryOfOrigin = countries[random.Next(countries.Length)],
                     IsFairTrade = random.NextDouble() > 0.5,
                     CrateWeight = CrateWeight
                 };

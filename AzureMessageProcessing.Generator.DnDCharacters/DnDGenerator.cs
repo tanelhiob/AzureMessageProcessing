@@ -10,43 +10,60 @@ namespace AzureMessageProcessing.Generator.DnDCharacters
 {
     public class DnDGenerator : BaseGenerator
     {
-        public DnDGenerator(string source, int interval) : base(source, interval)
+        private readonly int _numberOfItems;
+
+        public DnDGenerator(string source, int interval, int numberOfItems) : base(source, interval)
         {
+            _numberOfItems = numberOfItems;
         }
 
         public override Step GenerateStep()
         {
-            // to xml
+            // Serialize to XML
             var characters = GenerateCharacters().ToList();
 
-            XmlSerializer xsSubmit = new XmlSerializer(typeof(Character));
+            XmlSerializer serializer = new XmlSerializer(typeof(List<Character>));
 
-            var xml = "";
+            var charactersXml = string.Empty;
 
-            using (var sww = new StringWriter())
+            using (var stringWriter = new StringWriter())
+            using (XmlWriter xmlWriter = XmlWriter.Create(stringWriter))
             {
-                using (XmlWriter writer = XmlWriter.Create(sww))
-                {
-                    xsSubmit.Serialize(writer, characters);
-                    xml = sww.ToString(); // Your XML
-                }
+                serializer.Serialize(xmlWriter, characters);
+                charactersXml = stringWriter.ToString();
             }
 
             return new Step
             {
-                Body = xml,
+                Body = charactersXml,
                 Id = Guid.NewGuid()
             };
         }
 
         private IEnumerable<Character> GenerateCharacters()
         {
-            yield return new Character()
+            var classes = new string[] { "Barbarian", "Bard", "Cleric", "Druid", "Fighter", "Monk", "Paladin", "Ranger", "Rogue", "Sorcerer", "Warlock", "Wizard" };
+            var races = new string[] { "Dwarf", "Elf", "Gnome", "Half-elf", "Half-orc", "Halfling", "Human" };
+
+            var random = new Random();
+
+            for (var i = 0; i < _numberOfItems; i++)
             {
-                Charisma = 0,
-                Name = "lkf;lfkd;g",
-                Level = 8
-            };
+                var level = random.Next(6);
+                yield return new Character()
+                {
+                    Name = string.Join("", Guid.NewGuid().ToString().Where(x => char.IsLetter(x))).FirstLetterToUpperCase(),
+                    Race = races[random.Next(races.Length)],
+                    Level = level,
+                    Class = classes[random.Next(classes.Length)],
+                    Experience = level * 1000,
+                    Charisma = random.Next(5, 16),
+                    Dexterity = random.Next(5, 16),
+                    Intelligence = random.Next(5, 16),
+                    Strength = random.Next(5, 16),
+                    Wisdom = random.Next(5, 16)
+                };
+            }
         }
     }
 }
