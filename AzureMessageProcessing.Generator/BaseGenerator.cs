@@ -11,13 +11,13 @@ namespace AzureMessageProcessing.Generator
     public abstract class BaseGenerator
     {
         private readonly string _queueName = "onramp";
-
         private readonly string _storageContainerName = "blob-storage";
-
+        private readonly string _source;
         private readonly int _interval;
 
-        public BaseGenerator(int interval)
+        public BaseGenerator(string source, int interval)
         {
+            _source = source;
             _interval = interval;
         }
 
@@ -42,7 +42,8 @@ namespace AzureMessageProcessing.Generator
                 var message = new Message
                 {
                     Created = DateTimeOffset.UtcNow,
-                    ContentId = step.Id
+                    ContentId = step.Id,
+                    From = _source
                 };
 
                 Console.Write("Inserting new message to queue... ");

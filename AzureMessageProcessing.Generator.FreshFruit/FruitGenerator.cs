@@ -7,14 +7,14 @@ namespace AzureMessageProcessing.Generator.FreshFruit
 {
     public class FruitGenerator : BaseGenerator
     {
-        public FruitGenerator(int interval) : base(interval)
+        public FruitGenerator(string source, int interval) : base(source, interval)
         {
         }
 
         public override Step GenerateStep() => new Step
         {
-            Body = JsonConvert.SerializeObject(GenerateFruitCrates()),
-            Id = Guid.NewGuid()
+            Id = Guid.NewGuid(),
+            Body = JsonConvert.SerializeObject(GenerateFruitCrates())
         };
 
         private static IEnumerable<Fruit> GenerateFruitCrates()

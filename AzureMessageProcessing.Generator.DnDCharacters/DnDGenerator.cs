@@ -5,7 +5,7 @@ namespace AzureMessageProcessing.Generator.DnDCharacters
 {
     public class DnDGenerator : BaseGenerator
     {
-        public DnDGenerator(int interval) : base(interval)
+        public DnDGenerator(string source, int interval) : base(source, interval)
         {
         }
 

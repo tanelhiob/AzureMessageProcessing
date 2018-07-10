@@ -4,7 +4,7 @@
     {
         static void Main(string[] args)
         {
-            var generator = new DnDGenerator(100);
+            var generator = new DnDGenerator("DnD Characters", 100);
 
             generator.Run();
         }
