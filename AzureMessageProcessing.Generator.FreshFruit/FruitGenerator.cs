@@ -11,7 +11,7 @@ namespace AzureMessageProcessing.Generator.FreshFruit
         {
         }
 
-        public override Message GenerateMessage() => new Message
+        public override Step GenerateStep() => new Step
         {
             Body = JsonConvert.SerializeObject(GenerateFruitCrates()),
             Id = Guid.NewGuid()

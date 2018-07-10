@@ -9,7 +9,7 @@ namespace AzureMessageProcessing.Generator.DnDCharacters
         {
         }
 
-        public override Message GenerateMessage()
+        public override Step GenerateStep()
         {
             throw new NotImplementedException();
         }

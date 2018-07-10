@@ -28,32 +28,32 @@ namespace AzureMessageProcessing.Generator
 
             while (true)
             {
-                var message = GenerateMessage();
+                var step = GenerateStep();
 
-                Console.WriteLine(JsonConvert.SerializeObject(message));
+                Console.WriteLine(JsonConvert.SerializeObject(step));
 
-                Console.Write($"Uploading payload message '{message.Id}' to storage... ");
+                Console.Write($"Uploading payload message '{step.Id}' to storage... ");
 
-                var blockBlob = container.GetBlockBlobReference(message.Id.ToString());
-                blockBlob.UploadTextAsync(JsonConvert.SerializeObject(message)).Wait();
+                var blockBlob = container.GetBlockBlobReference(step.Id.ToString());
+                blockBlob.UploadTextAsync(JsonConvert.SerializeObject(step)).Wait();
 
                 Console.WriteLine($"Done.");
 
-                var queueMessage = new QueueMessage
+                var message = new Message
                 {
-                    CreatedOn = DateTimeOffset.UtcNow,
-                    MessageId = message.Id
+                    Created = DateTimeOffset.UtcNow,
+                    ContentId = step.Id
                 };
 
                 Console.Write("Inserting new message to queue... ");
-                queue.AddMessageAsync(new CloudQueueMessage(JsonConvert.SerializeObject(queueMessage))).Wait();
+                queue.AddMessageAsync(new CloudQueueMessage(JsonConvert.SerializeObject(message))).Wait();
                 Console.WriteLine("Done.");
 
                 Thread.Sleep(_interval);
             }
         }
 
-        public abstract Message GenerateMessage();
+        public abstract Step GenerateStep();
 
         private CloudQueue GetQueueClient(string queueName, string connectionString = "UseDevelopmentStorage=true")
         {
