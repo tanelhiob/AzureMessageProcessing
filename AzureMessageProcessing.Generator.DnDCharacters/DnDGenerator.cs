@@ -10,12 +10,9 @@ namespace AzureMessageProcessing.Generator.DnDCharacters
 {
     public class DnDGenerator : BaseGenerator
     {
-        private readonly int _numberOfItems;
-
-        public DnDGenerator(string source, int interval, int numberOfItems) 
-            : base(source, interval, numberOfItems)
+        public DnDGenerator(string source) 
+            : base(source)
         {
-            _numberOfItems = numberOfItems;
         }
 
         public override Step GenerateStep()
@@ -48,7 +45,7 @@ namespace AzureMessageProcessing.Generator.DnDCharacters
 
             var random = new Random();
 
-            for (var i = 0; i < _numberOfItems; i++)
+            for (var i = 0; i < NumberOfItemsInMessage; i++)
             {
                 var level = random.Next(6);
                 yield return new Character()

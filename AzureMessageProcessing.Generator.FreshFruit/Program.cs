@@ -4,7 +4,11 @@
     {
         static void Main(string[] args)
         {
-            var generator = new FruitGenerator("FreshFruits", interval: 200, numberOfItems: 2000);
+            var generator = new FruitGenerator("FreshFruits")
+            {
+                IntervalInMilliseconds = 200,
+                NumberOfItemsInMessage = 2000
+            };
 
             generator.Run();
         }

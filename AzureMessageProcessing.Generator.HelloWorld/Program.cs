@@ -4,7 +4,11 @@
     {
         static void Main(string[] args)
         {
-            var generator = new HelloWorldGenerator("Hello World", interval: 1000, numberofItems: 25);
+            var generator = new HelloWorldGenerator("Hello World")
+            {
+                IntervalInMilliseconds = 1000,
+                NumberOfItemsInMessage = 25
+            };
 
             generator.Run();
         }

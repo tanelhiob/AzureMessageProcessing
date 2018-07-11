@@ -4,7 +4,10 @@
     {
         static void Main(string[] args)
         {
-            var generator = new DnDGenerator("DnD Characters", interval: 100, numberOfItems: 1000);
+            var generator = new DnDGenerator("DnD Characters")
+            {
+                NumberOfMessages = 2
+            };
 
             generator.Run();
         }

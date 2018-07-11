@@ -10,30 +10,61 @@ namespace AzureMessageProcessing.Generator
 {
     public abstract class BaseGenerator
     {
-        private readonly string _queueName = "onramp";
-        private readonly string _storageContainerName = "blob-storage";
-        private readonly string _source;
-        private readonly int _interval;
-        private readonly int _numberOfItems;
+        /// <summary>
+        /// Default "onramp"
+        /// </summary>
+        public string QueueName { get; set; } = "onramp";
+        /// <summary>
+        /// Default "blob-storage"
+        /// </summary>
+        public string StorageContainerName { get; set; } = "blob-storage";
+        /// <summary>
+        /// default 100
+        /// </summary>
+        public int IntervalInMilliseconds { get; set; } = 100;
+        /// <summary>
+        /// Default 1000
+        /// </summary>
+        public int NumberOfItemsInMessage { get; set; } = 1000;
+        /// <summary>
+        /// Default 1
+        /// </summary>
+        public int NumberOfMessages { get; set; } = 1;
 
-        public BaseGenerator(string source, int interval, int numberOfItems)
+        private readonly string _source;
+
+        public BaseGenerator(string source)
         {
             _source = source;
-            _interval = interval;
-            _numberOfItems = numberOfItems;
         }
 
         public void Run()
         {
             Console.WriteLine($"Starting generator for {_source}");
-            Console.WriteLine($"Generating collection of {_numberOfItems} every {Math.Round(_interval / 1000d, 2)} s");
+            Console.WriteLine($"Generating collection of {NumberOfItemsInMessage} every {Math.Round(IntervalInMilliseconds / 1000d, 2)} seconds " +
+                $"until {(NumberOfMessages <= 0 ? "process is stopped" : $"{NumberOfMessages} has been generated") }");
 
-            var queue = GetQueueClient(_queueName);
-            var container = GetStorageContainer(_storageContainerName);
+            var queue = GetQueueClient(QueueName);
+            var container = GetStorageContainer(StorageContainerName);
 
             Console.WriteLine("Start generation");
 
-            while (true)
+            if (NumberOfMessages <= 0)
+            {
+                while (true)
+                {
+                    Generate();
+                }
+            }
+            else
+            {
+                for(var i = 0; i < NumberOfMessages; i++)
+                {
+                    Generate();
+                }
+            }
+
+            void Generate()
             {
                 var step = GenerateStep();
 
@@ -41,12 +72,6 @@ namespace AzureMessageProcessing.Generator
 
                 var blockBlob = container.GetBlockBlobReference(step.Id.ToString());
                 blockBlob.UploadTextAsync(JsonConvert.SerializeObject(step)).Wait();
-
-                //blockBlob.FetchAttributesAsync().Wait();
-
-                //var size = blockBlob.Properties.Length;
-
-                //Console.WriteLine($"Uploaded blob ({size} bytes).");
 
                 Console.WriteLine($"Done.");
 
@@ -61,7 +86,7 @@ namespace AzureMessageProcessing.Generator
                 queue.AddMessageAsync(new CloudQueueMessage(JsonConvert.SerializeObject(message))).Wait();
                 Console.WriteLine("Done.");
 
-                Thread.Sleep(_interval);
+                Thread.Sleep(IntervalInMilliseconds);
             }
         }
 

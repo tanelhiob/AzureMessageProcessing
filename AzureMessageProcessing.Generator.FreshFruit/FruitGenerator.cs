@@ -7,12 +7,9 @@ namespace AzureMessageProcessing.Generator.FreshFruit
 {
     public class FruitGenerator : BaseGenerator
     {
-        private readonly int _numberOfItems;
-
-        public FruitGenerator(string source, int interval, int numberOfItems) 
-            : base(source, interval, numberOfItems)
+        public FruitGenerator(string source) 
+            : base(source)
         {
-            _numberOfItems = numberOfItems;
         }
 
         public override Step GenerateStep() => new Step
@@ -42,7 +39,7 @@ namespace AzureMessageProcessing.Generator.FreshFruit
             var countries = new string[] { "Colombia", "Brazil", "Kenya", "India", "Indonesia", "Guyana", "Ecuador", "Panama", "Greece", "Italy", "Spain", "Turkey", "China", "Thailand", "Malaysia", "Argentina" };
             var random = new Random();
 
-            for (var i = 0; i < _numberOfItems; i++)
+            for (var i = 0; i < NumberOfItemsInMessage; i++)
             {
                 var (Name, CrateWeight) = fruits[random.Next(fruits.Count)];
                 yield return new Fruit

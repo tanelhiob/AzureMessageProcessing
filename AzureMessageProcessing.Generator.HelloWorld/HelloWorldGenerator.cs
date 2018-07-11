@@ -6,12 +6,9 @@ namespace AzureMessageProcessing.Generator.HelloWorld
 {
     public class HelloWorldGenerator : BaseGenerator
     {
-        private readonly int _numberOfItems;
-
-        public HelloWorldGenerator(string source, int interval, int numberofItems)
-            : base(source, interval, numberofItems)
+        public HelloWorldGenerator(string source)
+            : base(source)
         {
-            _numberOfItems = numberofItems;
         }
 
         public override Step GenerateStep()
@@ -25,7 +22,7 @@ namespace AzureMessageProcessing.Generator.HelloWorld
 
         private IEnumerable<string> GenerateContent()
         {
-            for (var i = 0; i < _numberOfItems; i++)
+            for (var i = 0; i < NumberOfItemsInMessage; i++)
             {
                 yield return Guid.NewGuid().ToString();
             }
