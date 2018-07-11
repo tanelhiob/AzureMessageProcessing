@@ -4,6 +4,7 @@ using Microsoft.WindowsAzure.Storage.Blob;
 using Microsoft.WindowsAzure.Storage.Queue;
 using Newtonsoft.Json;
 using System;
+using System.Configuration;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -50,8 +51,11 @@ namespace AzureMessageProcessing.Generator
             Console.WriteLine($"Generating collection of {NumberOfItemsInMessage} every {Math.Round(IntervalInMilliseconds / 1000d, 2)} seconds " +
                 $"until {(NumberOfMessages <= 0 ? "process is stopped" : $"{NumberOfMessages} has been generated") }");
 
-            var queue = await GetQueueClientAsync(QueueName);
-            var container = await GetStorageContainerAsync(StorageContainerName);
+            var connectionString = ConfigurationManager.ConnectionStrings["StorageConnectionString"]?.ConnectionString
+                ?? throw new Exception("Could not parse 'StorageConnectionString' from configuration");
+
+            var queue = await GetQueueClientAsync(QueueName, connectionString);
+            var container = await GetStorageContainerAsync(StorageContainerName, connectionString);
 
             Console.WriteLine("Start generation");
 
@@ -98,7 +102,7 @@ namespace AzureMessageProcessing.Generator
 
         public abstract Step GenerateStep();
 
-        private async Task<CloudQueue> GetQueueClientAsync(string queueName, string connectionString = "UseDevelopmentStorage=true")
+        private async Task<CloudQueue> GetQueueClientAsync(string queueName, string connectionString)
         {
             var storageAccount = CloudStorageAccount.Parse(connectionString);
 
@@ -115,7 +119,7 @@ namespace AzureMessageProcessing.Generator
             return queue;
         }
 
-        private async Task<CloudBlobContainer> GetStorageContainerAsync(string containerName, string connectionString = "UseDevelopmentStorage=true")
+        private async Task<CloudBlobContainer> GetStorageContainerAsync(string containerName, string connectionString)
         {
             var storageAccount = CloudStorageAccount.Parse(connectionString);
             var storage = storageAccount.CreateCloudBlobClient();
