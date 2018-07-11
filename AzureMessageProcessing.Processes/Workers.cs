@@ -3,8 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using AzureMessageProcessing.Core.Models;
+using AzureMessageProcessing.Processes.Processors;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Host;
+using Microsoft.WindowsAzure.Storage.Blob;
 using Microsoft.WindowsAzure.Storage.Queue;
 using Microsoft.WindowsAzure.Storage.Table;
 using Newtonsoft.Json;
@@ -58,7 +60,7 @@ namespace AzureMessageProcessing.Processes
             [Queue("dedicated")] CloudQueue dedicatedQueue,
             TraceWriter traceWriter)
         {
-            if (message.From == "Tanel")
+            if (message.From == "FreshFruits")
             {
                 await dedicatedQueue.AddMessageAsync(new CloudQueueMessage(JsonConvert.SerializeObject(message)));
             }
@@ -100,19 +102,59 @@ namespace AzureMessageProcessing.Processes
         [FunctionName("ProcessorForConsumption")]
         public static async Task ProcessorForConsumption(
             [QueueTrigger("consumption")] Message message,
-            [Table("data")] CloudTable table,
+            [Blob("blob-storage")] CloudBlobContainer blobContainer,
             TraceWriter traceWriter)
         {
-            await Processor(message, table, traceWriter);
+            await ProcessBlob(message, blobContainer, traceWriter);
         }
 
         [FunctionName("ProcessorForDedicated")]
         public static async Task ProcessorForDedicated(
             [QueueTrigger("dedicated")] Message message,
-            [Table("data")] CloudTable table,
+            [Blob("blob-storage")] CloudBlobContainer blobContainer,
             TraceWriter traceWriter)
         {
-            await Processor(message, table, traceWriter);
+            await ProcessBlob(message, blobContainer, traceWriter);
+        }
+
+        private static async Task ProcessBlob(Message message,
+            CloudBlobContainer blobContainer,
+            TraceWriter traceWriter)
+        {
+            var blobReference = blobContainer.GetBlockBlobReference(message.ContentId.ToString());
+
+            var step = await GetStepFromBlobAsync(blobReference);
+            var processor = ChooseProcessor(message);
+
+            await processor.ProcessAsync(step, traceWriter);
+
+
+            async Task<Step> GetStepFromBlobAsync(CloudBlockBlob blob)
+            {
+                var blobString = await blob.DownloadTextAsync();
+                return JsonConvert.DeserializeObject<Step>(blobString);
+            }
+
+            IProcessor ChooseProcessor(Message m)
+            {
+                IProcessor p = null;
+                switch (m.From)
+                {
+                    case "FreshFruits":
+                        p = new FruitProcessor();
+                        break;
+                    case "DnD Characters":
+                        p = new CharacterProcessor();
+                        break;
+                    case "Hello World":
+                        p = new HelloProcessor();
+                        break;
+                    default:
+                        throw new NotImplementedException($"Processor for source {m.From} is not configured");
+                }
+
+                return p;
+            }
         }
     }
 }
