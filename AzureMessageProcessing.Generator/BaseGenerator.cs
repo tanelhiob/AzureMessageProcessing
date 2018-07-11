@@ -5,6 +5,7 @@ using Microsoft.WindowsAzure.Storage.Queue;
 using Newtonsoft.Json;
 using System;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace AzureMessageProcessing.Generator
 {
@@ -38,14 +39,14 @@ namespace AzureMessageProcessing.Generator
             _source = source;
         }
 
-        public void Run()
+        public async Task RunAsync()
         {
             Console.WriteLine($"Starting generator for {_source}");
             Console.WriteLine($"Generating collection of {NumberOfItemsInMessage} every {Math.Round(IntervalInMilliseconds / 1000d, 2)} seconds " +
                 $"until {(NumberOfMessages <= 0 ? "process is stopped" : $"{NumberOfMessages} has been generated") }");
 
-            var queue = GetQueueClient(QueueName);
-            var container = GetStorageContainer(StorageContainerName);
+            var queue = await GetQueueClientAsync(QueueName);
+            var container = await GetStorageContainerAsync(StorageContainerName);
 
             Console.WriteLine("Start generation");
 
@@ -53,25 +54,25 @@ namespace AzureMessageProcessing.Generator
             {
                 while (true)
                 {
-                    Generate();
+                    await GenerateAsync();
                 }
             }
             else
             {
-                for(var i = 0; i < NumberOfMessages; i++)
+                for (var i = 0; i < NumberOfMessages; i++)
                 {
-                    Generate();
+                    await GenerateAsync();
                 }
             }
 
-            void Generate()
+            async Task GenerateAsync()
             {
                 var step = GenerateStep();
 
                 Console.Write($"Uploading payload message '{step.Id}' to storage... ");
 
                 var blockBlob = container.GetBlockBlobReference(step.Id.ToString());
-                blockBlob.UploadTextAsync(JsonConvert.SerializeObject(step)).Wait();
+                await blockBlob.UploadTextAsync(JsonConvert.SerializeObject(step));
 
                 Console.WriteLine($"Done.");
 
@@ -83,7 +84,7 @@ namespace AzureMessageProcessing.Generator
                 };
 
                 Console.Write("Inserting new message to queue... ");
-                queue.AddMessageAsync(new CloudQueueMessage(JsonConvert.SerializeObject(message))).Wait();
+                await queue.AddMessageAsync(new CloudQueueMessage(JsonConvert.SerializeObject(message)));
                 Console.WriteLine("Done.");
 
                 Thread.Sleep(IntervalInMilliseconds);
@@ -92,7 +93,7 @@ namespace AzureMessageProcessing.Generator
 
         public abstract Step GenerateStep();
 
-        private CloudQueue GetQueueClient(string queueName, string connectionString = "UseDevelopmentStorage=true")
+        private async Task<CloudQueue> GetQueueClientAsync(string queueName, string connectionString = "UseDevelopmentStorage=true")
         {
             var storageAccount = CloudStorageAccount.Parse(connectionString);
 
@@ -100,23 +101,22 @@ namespace AzureMessageProcessing.Generator
 
             var queue = queueClient.GetQueueReference(queueName);
 
-            var wasCreated = queue.CreateIfNotExistsAsync().Result;
+            var wasCreated = await queue.CreateIfNotExistsAsync();
             var msg = wasCreated
                 ? $"Queue '{queueName}' created"
                 : $"Queue '{queueName}' exists";
             Console.WriteLine(msg);
 
             return queue;
-
         }
 
-        private CloudBlobContainer GetStorageContainer(string containerName, string connectionString = "UseDevelopmentStorage=true")
+        private async Task<CloudBlobContainer> GetStorageContainerAsync(string containerName, string connectionString = "UseDevelopmentStorage=true")
         {
             var storageAccount = CloudStorageAccount.Parse(connectionString);
             var storage = storageAccount.CreateCloudBlobClient();
 
             var storageContainer = storage.GetContainerReference(containerName);
-            var wasCreated = storageContainer.CreateIfNotExistsAsync().Result;
+            var wasCreated = await storageContainer.CreateIfNotExistsAsync();
             var msg = wasCreated
                 ? $"Storage container '{containerName}' created"
                 : $"Storage container '{containerName}' exists";

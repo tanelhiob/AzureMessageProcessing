@@ -10,7 +10,7 @@
                 NumberOfItemsInMessage = 25
             };
 
-            generator.Run();
+            generator.RunAsync().Wait();
         }
     }
 }

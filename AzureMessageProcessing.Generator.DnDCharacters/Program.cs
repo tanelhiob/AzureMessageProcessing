@@ -1,4 +1,6 @@
-﻿namespace AzureMessageProcessing.Generator.DnDCharacters
+﻿using System.Threading.Tasks;
+
+namespace AzureMessageProcessing.Generator.DnDCharacters
 {
     public class Program
     {
@@ -9,7 +11,7 @@
                 NumberOfMessages = 2
             };
 
-            generator.Run();
+            generator.RunAsync().Wait();
         }
     }
 }

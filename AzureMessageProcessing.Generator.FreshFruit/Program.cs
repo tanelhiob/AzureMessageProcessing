@@ -10,7 +10,7 @@
                 NumberOfItemsInMessage = 2000
             };
 
-            generator.Run();
+            generator.RunAsync().Wait();
         }
     }
 }
