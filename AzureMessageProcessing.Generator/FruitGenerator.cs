@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using AzureMessageProcessing.Core.Models;
 using Newtonsoft.Json;
 
-namespace AzureMessageProcessing.Generator.FreshFruit
+namespace AzureMessageProcessing.Generator
 {
     public class FruitGenerator : BaseGenerator
     {

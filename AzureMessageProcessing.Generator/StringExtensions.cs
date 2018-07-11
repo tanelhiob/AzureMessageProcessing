@@ -1,4 +1,4 @@
-﻿namespace AzureMessageProcessing.Generator.DnDCharacters
+﻿namespace AzureMessageProcessing.Generator
 {
     public static class StringExtensions
     {

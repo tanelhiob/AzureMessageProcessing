@@ -6,7 +6,7 @@ using System.Xml;
 using System.Xml.Serialization;
 using AzureMessageProcessing.Core.Models;
 
-namespace AzureMessageProcessing.Generator.DnDCharacters
+namespace AzureMessageProcessing.Generator
 {
     public class DnDGenerator : BaseGenerator
     {
