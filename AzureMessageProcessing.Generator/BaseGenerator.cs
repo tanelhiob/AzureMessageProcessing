@@ -12,23 +12,28 @@ namespace AzureMessageProcessing.Generator
     public abstract class BaseGenerator
     {
         /// <summary>
-        /// Default "onramp"
+        /// Name of Azure queue.
+        /// Default is "onramp"
         /// </summary>
         public string QueueName { get; set; } = "onramp";
         /// <summary>
-        /// Default "blob-storage"
+        /// Name of Azure storage container.
+        /// Default is "blob-storage"
         /// </summary>
         public string StorageContainerName { get; set; } = "blob-storage";
         /// <summary>
-        /// default 100
+        /// How much to wait until generating new messages.
+        /// Default is 100
         /// </summary>
         public int IntervalInMilliseconds { get; set; } = 100;
         /// <summary>
-        /// Default 1000
+        /// How many items to include in messages.
+        /// Default is 1000
         /// </summary>
         public int NumberOfItemsInMessage { get; set; } = 1000;
         /// <summary>
-        /// Default 1
+        /// How many messages will be generated. Only effective if number is >0, otherwise will generate forever.
+        /// Default is 1
         /// </summary>
         public int NumberOfMessages { get; set; } = 1;
 

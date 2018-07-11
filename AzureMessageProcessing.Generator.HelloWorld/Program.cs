@@ -7,7 +7,8 @@
             var generator = new HelloWorldGenerator("Hello World")
             {
                 IntervalInMilliseconds = 1000,
-                NumberOfItemsInMessage = 25
+                NumberOfItemsInMessage = 50,
+                NumberOfMessages = -1
             };
 
             generator.RunAsync().Wait();
