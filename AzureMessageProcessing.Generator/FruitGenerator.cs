@@ -12,7 +12,7 @@ namespace AzureMessageProcessing.Generator
         {
         }
 
-        public override Step GenerateStep() => new Step
+        public override PipelineMessage GeneratePipelineMessage() => new PipelineMessage
         {
             Id = Guid.NewGuid(),
             Body = JsonConvert.SerializeObject(GenerateFruitCrates())

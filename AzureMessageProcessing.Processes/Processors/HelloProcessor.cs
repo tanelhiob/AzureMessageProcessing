@@ -8,15 +8,17 @@ namespace AzureMessageProcessing.Processes.Processors
 {
     public class HelloProcessor : IProcessor
     {
-        public async Task ProcessAsync(Step step, TraceWriter traceWriter)
+        public async Task ProcessAsync(PipelineMessage step, TraceWriter traceWriter)
         {
             traceWriter.Info("Processing Hello world guids");
 
             var lines = step.Body.Split(new string[] { Environment.NewLine }, StringSplitOptions.None);
 
             traceWriter.Info($"Found {lines.Length} guids");
-            lines.ToList()
-                .ForEach(x => traceWriter.Info($"--- {x}"));
+            foreach (var line in lines)
+            {
+                traceWriter.Info($"--- {line}");
+            }
 
             traceWriter.Info("Finished processing");
         }

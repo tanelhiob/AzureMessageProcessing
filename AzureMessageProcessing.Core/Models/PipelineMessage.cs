@@ -4,7 +4,7 @@ using System.Text;
 
 namespace AzureMessageProcessing.Core.Models
 {
-    public class Step
+    public class PipelineMessage
     {
         public string Body { get; set; }
 

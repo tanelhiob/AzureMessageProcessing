@@ -76,7 +76,7 @@ namespace AzureMessageProcessing.Generator
 
             async Task GenerateAsync()
             {
-                var step = GenerateStep();
+                var step = GeneratePipelineMessage();
 
                 Console.Write($"Uploading payload message '{step.Id}' to storage... ");
 
@@ -85,7 +85,7 @@ namespace AzureMessageProcessing.Generator
 
                 Console.WriteLine($"Done.");
 
-                var message = new Message
+                var message = new QueueMessage
                 {
                     Created = DateTimeOffset.UtcNow,
                     ContentId = step.Id,
@@ -100,7 +100,7 @@ namespace AzureMessageProcessing.Generator
             }
         }
 
-        public abstract Step GenerateStep();
+        public abstract PipelineMessage GeneratePipelineMessage();
 
         private async Task<CloudQueue> GetQueueClientAsync(string queueName, string connectionString)
         {

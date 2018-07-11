@@ -13,13 +13,13 @@ using Newtonsoft.Json;
 
 namespace AzureMessageProcessing.Processes
 {
-    public class Person : TableEntity
-    {
-        public string FirstName { get; set; }
-        public string LastName { get; set; }
-        public int Age { get; set; }
-        public string DataSetId { get; set; }
-    }
+    //public class Person : TableEntity
+    //{
+    //    public string FirstName { get; set; }
+    //    public string LastName { get; set; }
+    //    public int Age { get; set; }
+    //    public string DataSetId { get; set; }
+    //}
 
     public static class Workers
     {
@@ -55,7 +55,7 @@ namespace AzureMessageProcessing.Processes
 
         [FunctionName("OnRamp")]
         public static async Task OnRampMessage(
-            [QueueTrigger("onramp")] Message message,
+            [QueueTrigger("onramp")] QueueMessage message,
             [Queue("consumption")] CloudQueue consumptionQueue,
             [Queue("dedicated")] CloudQueue dedicatedQueue,
             TraceWriter traceWriter)
@@ -70,38 +70,38 @@ namespace AzureMessageProcessing.Processes
             }
         }
 
-        private static async Task Processor(Message message, CloudTable table, TraceWriter traceWriter)
-        {
-            var query = new TableQuery<Person>().Where(TableQuery.GenerateFilterCondition(nameof(Person.DataSetId), QueryComparisons.Equal, message.ContentId.ToString()));
+        //private static async Task Processor(Message message, CloudTable table, TraceWriter traceWriter)
+        //{
+        //    var query = new TableQuery<Person>().Where(TableQuery.GenerateFilterCondition(nameof(Person.DataSetId), QueryComparisons.Equal, message.ContentId.ToString()));
 
-            List<Person> persons = new List<Person>();
+        //    List<Person> persons = new List<Person>();
 
-            TableContinuationToken token = null;
-            do
-            {
-                var segment = await table.ExecuteQuerySegmentedAsync(query, token);
-                token = segment.ContinuationToken;
-                persons.AddRange(segment.Results);
-            } while (token != null);
+        //    TableContinuationToken token = null;
+        //    do
+        //    {
+        //        var segment = await table.ExecuteQuerySegmentedAsync(query, token);
+        //        token = segment.ContinuationToken;
+        //        persons.AddRange(segment.Results);
+        //    } while (token != null);
 
-            var highestAge = persons.Select(x => x.Age).DefaultIfEmpty(0).Max();
-            var personWithHighestAge = persons.FirstOrDefault(x => x.Age == highestAge);
+        //    var highestAge = persons.Select(x => x.Age).DefaultIfEmpty(0).Max();
+        //    var personWithHighestAge = persons.FirstOrDefault(x => x.Age == highestAge);
 
-            if (personWithHighestAge != null)
-            {
-                traceWriter.Info($"{personWithHighestAge.FirstName} {personWithHighestAge.LastName} {personWithHighestAge.Age}");
-            }
-            else
-            {
-                traceWriter.Warning("no persons found at all");
-            }
+        //    if (personWithHighestAge != null)
+        //    {
+        //        traceWriter.Info($"{personWithHighestAge.FirstName} {personWithHighestAge.LastName} {personWithHighestAge.Age}");
+        //    }
+        //    else
+        //    {
+        //        traceWriter.Warning("no persons found at all");
+        //    }
 
-            traceWriter.Warning($"message processing time {DateTimeOffset.Now - message.Created}");
-        }
+        //    traceWriter.Warning($"message processing time {DateTimeOffset.Now - message.Created}");
+        //}
 
         [FunctionName("ProcessorForConsumption")]
         public static async Task ProcessorForConsumption(
-            [QueueTrigger("consumption")] Message message,
+            [QueueTrigger("consumption")] QueueMessage message,
             [Blob("blob-storage")] CloudBlobContainer blobContainer,
             TraceWriter traceWriter)
         {
@@ -110,32 +110,32 @@ namespace AzureMessageProcessing.Processes
 
         [FunctionName("ProcessorForDedicated")]
         public static async Task ProcessorForDedicated(
-            [QueueTrigger("dedicated")] Message message,
+            [QueueTrigger("dedicated")] QueueMessage message,
             [Blob("blob-storage")] CloudBlobContainer blobContainer,
             TraceWriter traceWriter)
         {
             await ProcessBlob(message, blobContainer, traceWriter);
         }
 
-        private static async Task ProcessBlob(Message message,
+        private static async Task ProcessBlob(QueueMessage message,
             CloudBlobContainer blobContainer,
             TraceWriter traceWriter)
         {
             var blobReference = blobContainer.GetBlockBlobReference(message.ContentId.ToString());
 
-            var step = await GetStepFromBlobAsync(blobReference);
+            var pipelineMessage = await GetPipelineMessageFromBlobAsync(blobReference);
             var processor = ChooseProcessor(message);
 
-            await processor.ProcessAsync(step, traceWriter);
+            await processor.ProcessAsync(pipelineMessage, traceWriter);
 
 
-            async Task<Step> GetStepFromBlobAsync(CloudBlockBlob blob)
+            async Task<PipelineMessage> GetPipelineMessageFromBlobAsync(CloudBlockBlob blob)
             {
                 var blobString = await blob.DownloadTextAsync();
-                return JsonConvert.DeserializeObject<Step>(blobString);
+                return JsonConvert.DeserializeObject<PipelineMessage>(blobString);
             }
 
-            IProcessor ChooseProcessor(Message m)
+            IProcessor ChooseProcessor(QueueMessage m)
             {
                 IProcessor p = null;
                 switch (m.From)

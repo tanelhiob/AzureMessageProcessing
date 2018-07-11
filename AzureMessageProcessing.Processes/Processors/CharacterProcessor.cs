@@ -7,7 +7,7 @@ namespace AzureMessageProcessing.Processes.Processors
 {
     public class CharacterProcessor : IProcessor
     {
-        public async Task ProcessAsync(Step step, TraceWriter traceWriter)
+        public async Task ProcessAsync(PipelineMessage step, TraceWriter traceWriter)
         {
             traceWriter.Info($"Processing list of DnD characters. Step id {step.Id}");
 

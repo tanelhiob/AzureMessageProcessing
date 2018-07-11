@@ -6,6 +6,6 @@ namespace AzureMessageProcessing.Processes.Processors
 {
     public interface IProcessor
     {
-        Task ProcessAsync(Step step, TraceWriter traceWriter);
+        Task ProcessAsync(PipelineMessage step, TraceWriter traceWriter);
     }
 }

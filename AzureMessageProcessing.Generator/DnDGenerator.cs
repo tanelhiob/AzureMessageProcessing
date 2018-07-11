@@ -15,7 +15,7 @@ namespace AzureMessageProcessing.Generator
         {
         }
 
-        public override Step GenerateStep()
+        public override PipelineMessage GeneratePipelineMessage()
         {
             // Serialize to XML
             var characters = GenerateCharacters().ToList();
@@ -31,7 +31,7 @@ namespace AzureMessageProcessing.Generator
                 charactersXml = stringWriter.ToString();
             }
 
-            return new Step
+            return new PipelineMessage
             {
                 Body = charactersXml,
                 Id = Guid.NewGuid()

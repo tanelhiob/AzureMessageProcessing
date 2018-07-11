@@ -2,7 +2,7 @@
 
 namespace AzureMessageProcessing.Core.Models
 {
-    public class Message
+    public class QueueMessage
     {
         public Guid ContentId { get; set; }
 

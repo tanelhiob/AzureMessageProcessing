@@ -11,9 +11,9 @@ namespace AzureMessageProcessing.Generator
         {
         }
 
-        public override Step GenerateStep()
+        public override PipelineMessage GeneratePipelineMessage()
         {
-            return new Step
+            return new PipelineMessage
             {
                 Body = string.Join(Environment.NewLine, GenerateContent()),
                 Id = Guid.NewGuid()
