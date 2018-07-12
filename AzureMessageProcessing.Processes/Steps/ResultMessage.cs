@@ -1,10 +1,16 @@
-﻿using AzureMessageProcessing.Core.Models;
-using Microsoft.WindowsAzure.Storage.Table;
+﻿using Microsoft.WindowsAzure.Storage.Table;
+using System;
 
 namespace AzureMessageProcessing.Processes.Steps
 {
     public class ResultMessage : TableEntity
     {
-        public QueueMessage QueueMessage { get; set; }
+        public string ContentId { get; set; }
+
+        public string From { get; set; }
+
+        public DateTimeOffset Created { get; set; }
+
+        public TimeSpan Duration { get; set; }
     }
 }
