@@ -26,7 +26,6 @@ namespace AzureMessageProcessing.Processes.Steps
 
             message.Body = JsonConvert.SerializeObject(MaxFruits);
 
-            message.Id = Guid.NewGuid();
             return message;
         }
     }

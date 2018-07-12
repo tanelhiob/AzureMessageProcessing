@@ -40,9 +40,7 @@ namespace AzureMessageProcessing.Processes.Steps
             
             var isFairTradeCount = fruits.Count(x => x.IsFairTrade);
             traceWriter.Warning($"- Percentage of fair trade fruit crates: {Math.Round((double)isFairTradeCount / fruits.Count * 100, 2)}%");
-
-            message.Id = Guid.NewGuid();
-
+            
             return message;
         }
     }

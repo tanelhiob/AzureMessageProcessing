@@ -81,6 +81,7 @@ namespace AzureMessageProcessing.Processes
             if (step != null)
             {
                 var nextPipelineMessage = await step.ProcessAsync(pipelineMessage, traceWriter);
+                nextPipelineMessage.Id = Guid.NewGuid();
 
                 nextPipelineMessage.NextStep++;
 
@@ -114,9 +115,19 @@ namespace AzureMessageProcessing.Processes
             {
                 var stepMaps = new ConcurrentDictionary<string, ConcurrentQueue<Type>>
                 {
-                    ["FreshFruits"] = new ConcurrentQueue<Type>(new Type[] { typeof(FreshFruitPrintInfo), typeof(FreshFruitGetWithMaxCrates), typeof(FreshFruitPrintInfo) }),
+                    ["FreshFruits"] = new ConcurrentQueue<Type>(new Type[] {
+                        typeof(FreshFruitPrintInfo),
+                        typeof(FreshFruitGetWithMaxCrates),
+                        typeof(FreshFruitPrintInfo)
+                    }),
                     ["DnD Characters"] = new ConcurrentQueue<Type>(new Type[] { }),
-                    ["Hello World"] = new ConcurrentQueue<Type>(new Type[] { })
+                    ["Hello World"] = new ConcurrentQueue<Type>(new Type[] {
+                        typeof(HelloWorldDuplicate),
+                        typeof(HelloWorldDuplicate),
+                        typeof(HelloWorldDuplicate),
+                        typeof(HelloWorldDuplicate),
+                        typeof(HelloWorldDuplicate)
+                    })
                 };
 
                 if (!stepMaps.TryGetValue(processName, out var stepMap)) { throw new Exception($"Steps for process '{processName}' are not configured."); }
@@ -130,13 +141,13 @@ namespace AzureMessageProcessing.Processes
 
                 if (message.NextStep >= message.Steps.Count)
                 {
-                    traceWriter.Warning($"Reached max number of configured steps {message.NextStep}");
+                    traceWriter.Warning($"Reached max number of configured steps: {message.NextStep}");
                 }
                 else
                 {
                     var nextStepType = message.Steps[message.NextStep];
 
-                    nextStep = (IStep)Activator.CreateInstance(nextStepType);    
+                    nextStep = (IStep)Activator.CreateInstance(nextStepType);
                 }
 
                 return nextStep;
