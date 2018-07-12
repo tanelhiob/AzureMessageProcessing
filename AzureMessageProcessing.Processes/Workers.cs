@@ -81,7 +81,7 @@ namespace AzureMessageProcessing.Processes
             if (step != null)
             {
                 var nextPipelineMessage = await step.ProcessAsync(pipelineMessage, traceWriter);
-                nextPipelineMessage.Id = Guid.NewGuid();
+                nextPipelineMessage.Id = Guid.NewGuid(); // TODO don't give new id, re-use same blob for multiple steps?
 
                 nextPipelineMessage.NextStep++;
 
@@ -120,7 +120,9 @@ namespace AzureMessageProcessing.Processes
                         typeof(FreshFruitGetWithMaxCrates),
                         typeof(FreshFruitPrintInfo)
                     }),
-                    ["DnD Characters"] = new ConcurrentQueue<Type>(new Type[] { }),
+                    ["DnD Characters"] = new ConcurrentQueue<Type>(new Type[] {
+                        //typeof(DnDCharactersConvertToJson)
+                    }),
                     ["Hello World"] = new ConcurrentQueue<Type>(new Type[] {
                         typeof(HelloWorldDuplicate),
                         typeof(HelloWorldDuplicate),
