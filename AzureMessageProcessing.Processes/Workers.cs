@@ -108,7 +108,7 @@ namespace AzureMessageProcessing.Processes
                 var stepMaps = new ConcurrentDictionary<string, ConcurrentQueue<Type>>
                 {
                     ["FreshFruits"] = new ConcurrentQueue<Type>(new Type[] { typeof(FreshFruitPrintInfo), typeof(FreshFruitGetWithMaxCrates), typeof(FreshFruitPrintInfo) }),
-                    ["DnD Caharacters"] = new ConcurrentQueue<Type>(new Type[] { }),
+                    ["DnD Characters"] = new ConcurrentQueue<Type>(new Type[] { }),
                     ["Hello World"] = new ConcurrentQueue<Type>(new Type[] { })
                 };
 
