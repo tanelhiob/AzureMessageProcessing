@@ -12,30 +12,34 @@ namespace AzureMessageProcessing.Processes.Steps
     {
         public async Task<PipelineMessage> ProcessAsync(PipelineMessage message, TraceWriter traceWriter)
         {
-            traceWriter.Info("Processing list of fruit crates");
+            traceWriter.Warning("Information about fruit crates");
 
             var fruits = JsonConvert.DeserializeObject<List<Fruit>>(message.Body);
 
-            traceWriter.Info($"Total number of crates: {fruits.Count}");
+            traceWriter.Warning($"- Total number of crates: {fruits.Count}");
 
-            traceWriter.Info("Number of crates per fruit:");
-            fruits.GroupBy(x => x.Name)
+            traceWriter.Warning("- Number of crates per fruit:");
+            var cratesPerFruit=fruits.GroupBy(x => x.Name)
                 .Select(g => (Name: g.Key, Count: g.Count()))
-                .OrderByDescending(x => x.Count)
-                .ToList()
-                .ForEach(x => traceWriter.Info($"- {x.Name}: {x.Count}"));
+                .OrderByDescending(x => x.Count);
 
-            traceWriter.Info("Number of crates per country of origin:");
-            fruits.GroupBy(x => x.CountryOfOrigin)
+            foreach (var (Name, Count) in cratesPerFruit)
+            {
+                traceWriter.Warning($"-- {Name}: {Count}");
+            }
+
+            traceWriter.Warning("- Number of crates per country of origin:");
+            var cratesPerCountry = fruits.GroupBy(x => x.CountryOfOrigin)
                 .Select(g => (Country: g.Key, Count: g.Count()))
-                .OrderByDescending(x => x.Country)
-                .ToList()
-                .ForEach(x => traceWriter.Info($"- {x.Country}: {x.Count}"));
+                .OrderByDescending(x => x.Country);
 
+            foreach (var (Country, Count) in cratesPerCountry)
+            {
+                traceWriter.Warning($"-- {Country}: {Count}");
+            }
+            
             var isFairTradeCount = fruits.Count(x => x.IsFairTrade);
-            traceWriter.Info($"Percentage of fair trade fruit crates: {Math.Round((double)isFairTradeCount / fruits.Count * 100, 2)}%");
-
-            traceWriter.Info("Processing finished");
+            traceWriter.Warning($"- Percentage of fair trade fruit crates: {Math.Round((double)isFairTradeCount / fruits.Count * 100, 2)}%");
 
             message.Id = Guid.NewGuid();
 

@@ -12,18 +12,19 @@ namespace AzureMessageProcessing.Processes.Steps
     {
         public async Task<PipelineMessage> ProcessAsync(PipelineMessage message, TraceWriter traceWriter)
         {
-            traceWriter.Info("Processing list of fruit crates");
+            traceWriter.Warning("Finding fruit with maximum number of crates");
 
             var fruits = JsonConvert.DeserializeObject<List<Fruit>>(message.Body);
 
-            var maxCrates = fruits
+            var (Name, Count, MaxFruits) = fruits
                 .GroupBy(x => x.Name)
                 .Select(g => (Name: g.Key, Count: g.Count(), Fruits: g.ToList()))
                 .OrderByDescending(x => x.Count)
-                .FirstOrDefault()
-                .Fruits;
+                .FirstOrDefault();
 
-            message.Body = JsonConvert.SerializeObject(maxCrates);
+            traceWriter.Warning($"{Name} has most crates ({Count})");
+
+            message.Body = JsonConvert.SerializeObject(MaxFruits);
 
             message.Id = Guid.NewGuid();
             return message;

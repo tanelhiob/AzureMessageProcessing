@@ -128,7 +128,7 @@ namespace AzureMessageProcessing.Processes
                 }
                 catch (IndexOutOfRangeException)
                 {
-                    throw new Exception($"No step configured at location {message.NextStep}");
+                    traceWriter.Warning($"Reached max number of configured steps {message.NextStep}");
                 }
 
                 return nextStep;
