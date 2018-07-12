@@ -78,16 +78,23 @@ namespace AzureMessageProcessing.Processes
 
             var step = SelectStep(pipelineMessage);
 
-            var nextPipelineMessage = await step.ProcessAsync(pipelineMessage, traceWriter);
+            if (step != null)
+            {
+                var nextPipelineMessage = await step.ProcessAsync(pipelineMessage, traceWriter);
 
-            nextPipelineMessage.NextStep++;
+                nextPipelineMessage.NextStep++;
 
-            var newBlobId = nextPipelineMessage.Id;
-            await SaveNewPipelineMessageToBlobAsync(blobContainer, newBlobId, nextPipelineMessage);
+                var newBlobId = nextPipelineMessage.Id;
+                await SaveNewPipelineMessageToBlobAsync(blobContainer, newBlobId, nextPipelineMessage);
 
-            queueMessage.ContentId = newBlobId;
+                queueMessage.ContentId = newBlobId;
 
-            await PushMessageToCorrectQueueAsync(queueMessage, consumptionQueue, dedicatedQueue);
+                await PushMessageToCorrectQueueAsync(queueMessage, consumptionQueue, dedicatedQueue);
+            }
+            else
+            {
+                // TODO write execution info to table storage
+            }
 
 
             async Task<PipelineMessage> GetPipelineMessageFromBlobAsync(CloudBlobContainer container, Guid id)
@@ -120,15 +127,16 @@ namespace AzureMessageProcessing.Processes
             IStep SelectStep(PipelineMessage message)
             {
                 IStep nextStep = null;
-                try
+
+                if (message.NextStep >= message.Steps.Count)
+                {
+                    traceWriter.Warning($"Reached max number of configured steps {message.NextStep}");
+                }
+                else
                 {
                     var nextStepType = message.Steps[message.NextStep];
 
-                    nextStep = (IStep)Activator.CreateInstance(nextStepType);
-                }
-                catch (IndexOutOfRangeException)
-                {
-                    traceWriter.Warning($"Reached max number of configured steps {message.NextStep}");
+                    nextStep = (IStep)Activator.CreateInstance(nextStepType);    
                 }
 
                 return nextStep;
