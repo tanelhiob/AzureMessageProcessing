@@ -1,4 +1,6 @@
-﻿namespace AzureMessageProcessing.Generator.HelloWorld
+﻿using AzureMessageProcessing.Core.Generators;
+
+namespace AzureMessageProcessing.Generator.HelloWorld
 {
     class Program
     {

@@ -6,17 +6,6 @@ namespace AzureMessageProcessing.Generator
 {
     public class Program
     {
-
-        //{
-        //    var generator = new HelloWorldGenerator("Hello World")
-        //    {
-        //        IntervalInMilliseconds = 1000,
-        //        NumberOfItemsInMessage = 50,
-        //        NumberOfMessages = -1
-        //    };
-
-        //    generator.RunAsync().Wait();
-
         public static int Main(string[] args)
              => CommandLineApplication.Execute<Program>(args);
 
@@ -37,6 +26,19 @@ namespace AzureMessageProcessing.Generator
 
         private void OnExecute()
         {
+            var generator = GetGenerator();
+
+            if (RunForever) { generator.NumberOfMessages = -1; }
+            else if (MessagesCount.HasValue) { generator.NumberOfMessages = MessagesCount.Value; }
+
+            if (ItemsInMessages.HasValue) { generator.NumberOfItemsInMessage = ItemsInMessages.Value; }
+            if (Interval.HasValue) { generator.IntervalInMilliseconds = Interval.Value; }
+
+            generator.RunAsync().Wait();
+        }
+
+        private BaseGenerator GetGenerator()
+        {
             BaseGenerator generator;
             switch (GeneratorName ?? "hello")
             {
@@ -52,14 +54,7 @@ namespace AzureMessageProcessing.Generator
                 default:
                     throw new NotImplementedException($"Generator for {GeneratorName} does not exist");
             }
-
-            if (RunForever) { generator.NumberOfMessages = -1; }
-            else if (MessagesCount.HasValue) { generator.NumberOfMessages = MessagesCount.Value; }
-
-            if (ItemsInMessages.HasValue) { generator.NumberOfItemsInMessage = ItemsInMessages.Value; }
-            if (Interval.HasValue) { generator.IntervalInMilliseconds = Interval.Value; }
-            
-            generator.RunAsync().Wait();
+            return generator;
         }
     }
 }

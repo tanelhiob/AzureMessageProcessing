@@ -1,4 +1,6 @@
-﻿namespace AzureMessageProcessing.Generator.FreshFruit
+﻿using AzureMessageProcessing.Core.Generators;
+
+namespace AzureMessageProcessing.Generator.FreshFruit
 {
     public class Program
     {

@@ -1,4 +1,4 @@
-﻿using System.Threading.Tasks;
+﻿using AzureMessageProcessing.Core.Generators;
 
 namespace AzureMessageProcessing.Generator.DnDCharacters
 {
