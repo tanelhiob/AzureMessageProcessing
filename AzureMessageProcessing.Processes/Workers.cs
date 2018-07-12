@@ -8,6 +8,7 @@ using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Host;
 using Microsoft.WindowsAzure.Storage.Blob;
 using Microsoft.WindowsAzure.Storage.Queue;
+using Microsoft.WindowsAzure.Storage.Table;
 using Newtonsoft.Json;
 
 namespace AzureMessageProcessing.Processes
@@ -30,9 +31,10 @@ namespace AzureMessageProcessing.Processes
             [Blob("blob-storage")] CloudBlobContainer blobContainer,
             [Queue("consumption")] CloudQueue consumptionQueue,
             [Queue("dedicated")] CloudQueue dedicatedQueue,
+            [Table("resultmessages")] CloudTable resultMessageTable,
             TraceWriter traceWriter)
         {
-            await ProcessStep(message, blobContainer, consumptionQueue, dedicatedQueue, traceWriter);
+            await ProcessStep(message, blobContainer, consumptionQueue, dedicatedQueue, resultMessageTable, traceWriter);
         }
 
         [FunctionName("ProcessorForDedicated")]
@@ -41,9 +43,10 @@ namespace AzureMessageProcessing.Processes
             [Blob("blob-storage")] CloudBlobContainer blobContainer,
             [Queue("consumption")] CloudQueue consumptionQueue,
             [Queue("dedicated")] CloudQueue dedicatedQueue,
+            [Table("resultmessages")] CloudTable resultMessageTable,
             TraceWriter traceWriter)
         {
-            await ProcessStep(message, blobContainer, consumptionQueue, dedicatedQueue, traceWriter);
+            await ProcessStep(message, blobContainer, consumptionQueue, dedicatedQueue, resultMessageTable, traceWriter);
         }
 
         private static async Task PushMessageToCorrectQueueAsync(
@@ -66,6 +69,7 @@ namespace AzureMessageProcessing.Processes
             CloudBlobContainer blobContainer,
             CloudQueue consumptionQueue,
             CloudQueue dedicatedQueue,
+            CloudTable resultMessageTable,
             TraceWriter traceWriter)
         {
             var blobId = queueMessage.ContentId;
@@ -94,7 +98,15 @@ namespace AzureMessageProcessing.Processes
             }
             else
             {
-                // TODO write execution info to table storage
+                await resultMessageTable.CreateIfNotExistsAsync();
+
+                var resultMessage = new ResultMessage
+                {
+                    RowKey = Guid.NewGuid().ToString(),
+                    PartitionKey = String.Empty,
+                    QueueMessage = queueMessage,
+                };
+                await resultMessageTable.ExecuteAsync(TableOperation.Insert(resultMessage));
             }
 
 
