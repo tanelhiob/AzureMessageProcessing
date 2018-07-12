@@ -1,4 +1,4 @@
-﻿namespace AzureMessageProcessing.Generator
+﻿namespace AzureMessageProcessing.Core.Generators
 {
     public static class StringExtensions
     {

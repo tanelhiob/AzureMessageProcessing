@@ -7,7 +7,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\AzureMessageProcessing.Core\AzureMessageProcessing.Core.csproj" />
-    <ProjectReference Include="..\AzureMessageProcessing.Generator\AzureMessageProcessing.Generator.csproj" />
   </ItemGroup>
 
 </Project>

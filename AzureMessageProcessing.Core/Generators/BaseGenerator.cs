@@ -8,7 +8,7 @@ using System.Configuration;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace AzureMessageProcessing.Generator
+namespace AzureMessageProcessing.Core.Generators
 {
     public abstract class BaseGenerator
     {

@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using AzureMessageProcessing.Core.Models;
 
-namespace AzureMessageProcessing.Generator
+namespace AzureMessageProcessing.Core.Generators
 {
     public class HelloWorldGenerator : BaseGenerator
     {
