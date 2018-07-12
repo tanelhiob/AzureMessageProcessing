@@ -7,7 +7,7 @@
             var generator = new FruitGenerator("FreshFruits")
             {
                 NumberOfItemsInMessage = 2000,
-                NumberOfMessages = -1
+                NumberOfMessages = 1
             };
 
             generator.RunAsync().Wait();

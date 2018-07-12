@@ -10,6 +10,8 @@ namespace AzureMessageProcessing.Core.Models
 
         public Guid Id { get; set; }
 
+        public List<Type> Steps { get; set; } = new List<Type>();
 
+        public int NextStep { get; set; }
     }
 }

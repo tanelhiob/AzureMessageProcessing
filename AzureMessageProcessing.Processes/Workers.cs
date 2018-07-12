@@ -1,64 +1,55 @@
 ﻿using System;
-using System.Collections.Generic;
+using System.Collections.Concurrent;
 using System.Linq;
 using System.Threading.Tasks;
 using AzureMessageProcessing.Core.Models;
-using AzureMessageProcessing.Processes.Processors;
+using AzureMessageProcessing.Processes.Steps;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Host;
 using Microsoft.WindowsAzure.Storage.Blob;
 using Microsoft.WindowsAzure.Storage.Queue;
-using Microsoft.WindowsAzure.Storage.Table;
 using Newtonsoft.Json;
 
 namespace AzureMessageProcessing.Processes
 {
-    //public class Person : TableEntity
-    //{
-    //    public string FirstName { get; set; }
-    //    public string LastName { get; set; }
-    //    public int Age { get; set; }
-    //    public string DataSetId { get; set; }
-    //}
-
     public static class Workers
     {
-        //[FunctionName("Hello")]
-        //public static async Task<HttpResponseMessage> Hello(
-        //    [HttpTrigger] HttpRequestMessage request,
-        //    [Queue("onramp")] CloudQueue queue,
-        //    [Table("data")] CloudTable table,
-        //    TraceWriter traceWriter)
-        //{
-        //    var dataSetId = Guid.NewGuid();
-
-        //    var op = new TableBatchOperation
-        //    {
-        //        TableOperation.Insert(new Person { RowKey = Guid.NewGuid().ToString(), PartitionKey = string.Empty, FirstName = "Tanel", LastName = "Hiob", Age = 28, DataSetId = dataSetId.ToString() }),
-        //        TableOperation.Insert(new Person { RowKey = Guid.NewGuid().ToString(), PartitionKey = string.Empty, FirstName = "Liisi", LastName = "Mõtshärg", Age = 26, DataSetId = dataSetId.ToString() })
-        //    };
-
-        //    await table.CreateIfNotExistsAsync();
-        //    await table.ExecuteBatchAsync(op);
-
-        //    var message = new Message
-        //    {
-        //        ContentId = dataSetId,
-        //        Created = DateTimeOffset.Now,
-        //        From = "Tanel",
-        //    };
-
-        //    await queue.AddMessageAsync(new CloudQueueMessage(JsonConvert.SerializeObject(message)));
-
-        //    return new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent("Message added to the queue!") };
-        //}
-
         [FunctionName("OnRamp")]
         public static async Task OnRampMessage(
             [QueueTrigger("onramp")] QueueMessage message,
             [Queue("consumption")] CloudQueue consumptionQueue,
             [Queue("dedicated")] CloudQueue dedicatedQueue,
             TraceWriter traceWriter)
+        {
+            await PushMessageToCorrectQueueAsync(message, consumptionQueue, dedicatedQueue);
+        }
+
+        [FunctionName("ProcessorForConsumption")]
+        public static async Task ProcessorForConsumption(
+            [QueueTrigger("consumption")] QueueMessage message,
+            [Blob("blob-storage")] CloudBlobContainer blobContainer,
+            [Queue("consumption")] CloudQueue consumptionQueue,
+            [Queue("dedicated")] CloudQueue dedicatedQueue,
+            TraceWriter traceWriter)
+        {
+            await ProcessStep(message, blobContainer, consumptionQueue, dedicatedQueue, traceWriter);
+        }
+
+        [FunctionName("ProcessorForDedicated")]
+        public static async Task ProcessorForDedicated(
+            [QueueTrigger("dedicated")] QueueMessage message,
+            [Blob("blob-storage")] CloudBlobContainer blobContainer,
+            [Queue("consumption")] CloudQueue consumptionQueue,
+            [Queue("dedicated")] CloudQueue dedicatedQueue,
+            TraceWriter traceWriter)
+        {
+            await ProcessStep(message, blobContainer, consumptionQueue, dedicatedQueue, traceWriter);
+        }
+
+        private static async Task PushMessageToCorrectQueueAsync(
+            QueueMessage message,
+            CloudQueue consumptionQueue,
+            CloudQueue dedicatedQueue)
         {
             if (message.From == "FreshFruits")
             {
@@ -70,90 +61,77 @@ namespace AzureMessageProcessing.Processes
             }
         }
 
-        //private static async Task Processor(Message message, CloudTable table, TraceWriter traceWriter)
-        //{
-        //    var query = new TableQuery<Person>().Where(TableQuery.GenerateFilterCondition(nameof(Person.DataSetId), QueryComparisons.Equal, message.ContentId.ToString()));
-
-        //    List<Person> persons = new List<Person>();
-
-        //    TableContinuationToken token = null;
-        //    do
-        //    {
-        //        var segment = await table.ExecuteQuerySegmentedAsync(query, token);
-        //        token = segment.ContinuationToken;
-        //        persons.AddRange(segment.Results);
-        //    } while (token != null);
-
-        //    var highestAge = persons.Select(x => x.Age).DefaultIfEmpty(0).Max();
-        //    var personWithHighestAge = persons.FirstOrDefault(x => x.Age == highestAge);
-
-        //    if (personWithHighestAge != null)
-        //    {
-        //        traceWriter.Info($"{personWithHighestAge.FirstName} {personWithHighestAge.LastName} {personWithHighestAge.Age}");
-        //    }
-        //    else
-        //    {
-        //        traceWriter.Warning("no persons found at all");
-        //    }
-
-        //    traceWriter.Warning($"message processing time {DateTimeOffset.Now - message.Created}");
-        //}
-
-        [FunctionName("ProcessorForConsumption")]
-        public static async Task ProcessorForConsumption(
-            [QueueTrigger("consumption")] QueueMessage message,
-            [Blob("blob-storage")] CloudBlobContainer blobContainer,
-            TraceWriter traceWriter)
-        {
-            await ProcessBlob(message, blobContainer, traceWriter);
-        }
-
-        [FunctionName("ProcessorForDedicated")]
-        public static async Task ProcessorForDedicated(
-            [QueueTrigger("dedicated")] QueueMessage message,
-            [Blob("blob-storage")] CloudBlobContainer blobContainer,
-            TraceWriter traceWriter)
-        {
-            await ProcessBlob(message, blobContainer, traceWriter);
-        }
-
-        private static async Task ProcessBlob(QueueMessage message,
+        private static async Task ProcessStep(
+            QueueMessage queueMessage,
             CloudBlobContainer blobContainer,
+            CloudQueue consumptionQueue,
+            CloudQueue dedicatedQueue,
             TraceWriter traceWriter)
         {
-            var blobReference = blobContainer.GetBlockBlobReference(message.ContentId.ToString());
+            var blobId = queueMessage.ContentId;
+            var pipelineMessage = await GetPipelineMessageFromBlobAsync(blobContainer, blobId);
 
-            var pipelineMessage = await GetPipelineMessageFromBlobAsync(blobReference);
-            var processor = ChooseProcessor(message);
-
-            await processor.ProcessAsync(pipelineMessage, traceWriter);
-
-
-            async Task<PipelineMessage> GetPipelineMessageFromBlobAsync(CloudBlockBlob blob)
+            if (pipelineMessage.Steps.Count == 0)
             {
+                pipelineMessage.Steps = GetStepsForProcess(queueMessage.From).ToList();
+            }
+
+            var step = SelectStep(pipelineMessage);
+
+            var nextPipelineMessage = await step.ProcessAsync(pipelineMessage, traceWriter);
+
+            nextPipelineMessage.NextStep++;
+
+            var newBlobId = nextPipelineMessage.Id;
+            await SaveNewPipelineMessageToBlobAsync(blobContainer, newBlobId, nextPipelineMessage);
+
+            queueMessage.ContentId = newBlobId;
+
+            await PushMessageToCorrectQueueAsync(queueMessage, consumptionQueue, dedicatedQueue);
+
+
+            async Task<PipelineMessage> GetPipelineMessageFromBlobAsync(CloudBlobContainer container, Guid id)
+            {
+                var blob = container.GetBlockBlobReference(id.ToString());
                 var blobString = await blob.DownloadTextAsync();
                 return JsonConvert.DeserializeObject<PipelineMessage>(blobString);
             }
 
-            IProcessor ChooseProcessor(QueueMessage m)
+            async Task SaveNewPipelineMessageToBlobAsync(CloudBlobContainer container, Guid id, PipelineMessage message)
             {
-                IProcessor p = null;
-                switch (m.From)
+                var blob = container.GetBlockBlobReference(id.ToString());
+                await blob.UploadTextAsync(JsonConvert.SerializeObject(message));
+            }
+
+            ConcurrentQueue<Type> GetStepsForProcess(string processName)
+            {
+                var stepMaps = new ConcurrentDictionary<string, ConcurrentQueue<Type>>
                 {
-                    case "FreshFruits":
-                        p = new FruitProcessor();
-                        break;
-                    case "DnD Characters":
-                        p = new CharacterProcessor();
-                        break;
-                    case "Hello World":
-                        p = new HelloProcessor();
-                        break;
-                    default:
-                        throw new NotImplementedException($"Processor for source {m.From} is not configured");
+                    ["FreshFruits"] = new ConcurrentQueue<Type>(new Type[] { typeof(FreshFruitPrintInfo), typeof(FreshFruitGetWithMaxCrates), typeof(FreshFruitPrintInfo) }),
+                    ["DnD Caharacters"] = new ConcurrentQueue<Type>(new Type[] { }),
+                    ["Hello World"] = new ConcurrentQueue<Type>(new Type[] { })
+                };
+
+                if (!stepMaps.TryGetValue(processName, out var stepMap)) { throw new Exception($"Steps for process '{processName}' are not configured."); }
+
+                return stepMap;
+            }
+
+            IStep SelectStep(PipelineMessage message)
+            {
+                IStep nextStep = null;
+                try
+                {
+                    var nextStepType = message.Steps[message.NextStep];
+
+                    nextStep = (IStep)Activator.CreateInstance(nextStepType);
+                }
+                catch (IndexOutOfRangeException)
+                {
+                    throw new Exception($"No step configured at location {message.NextStep}");
                 }
 
-                return p;
+                return nextStep;
             }
         }
     }
