@@ -13,7 +13,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AzureMessageProcessing.Gene
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AzureMessageProcessing.Generator", "AzureMessageProcessing.Generator\AzureMessageProcessing.Generator.csproj", "{ED2C18E2-94D4-4D8D-A7E2-BD07BBF4D7BC}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AzureMessageProcessing.Generator.HelloWorld", "AzureMessageProcessing.Generator.HelloWorld\AzureMessageProcessing.Generator.HelloWorld.csproj", "{A7167FAD-3629-4905-9F1B-AB267CC9E8D3}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AzureMessageProcessing.Generator.HelloWorld", "AzureMessageProcessing.Generator.HelloWorld\AzureMessageProcessing.Generator.HelloWorld.csproj", "{A7167FAD-3629-4905-9F1B-AB267CC9E8D3}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AzureMessageProcessing.Statistics", "AzureMessageProcessing.Statistics\AzureMessageProcessing.Statistics.csproj", "{724D4F9F-2762-4A8D-8A1F-2C82A9AFF796}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -43,6 +45,10 @@ Global
 		{A7167FAD-3629-4905-9F1B-AB267CC9E8D3}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A7167FAD-3629-4905-9F1B-AB267CC9E8D3}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A7167FAD-3629-4905-9F1B-AB267CC9E8D3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{724D4F9F-2762-4A8D-8A1F-2C82A9AFF796}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{724D4F9F-2762-4A8D-8A1F-2C82A9AFF796}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{724D4F9F-2762-4A8D-8A1F-2C82A9AFF796}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{724D4F9F-2762-4A8D-8A1F-2C82A9AFF796}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

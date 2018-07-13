@@ -11,6 +11,6 @@ namespace AzureMessageProcessing.Processes.Steps
 
         public DateTimeOffset Created { get; set; }
 
-        public TimeSpan Duration { get; set; }
+        public DateTimeOffset Completed { get; set; }
     }
 }

@@ -103,11 +103,11 @@ namespace AzureMessageProcessing.Processes
                 var resultMessage = new ResultMessage
                 {
                     RowKey = Guid.NewGuid().ToString(),
-                    PartitionKey = String.Empty,
+                    PartitionKey = string.Empty,
                     ContentId = queueMessage.ContentId.ToString(),
                     From = queueMessage.From,
                     Created = queueMessage.Created,
-                    Duration = DateTimeOffset.Now - queueMessage.Created,
+                    Completed = DateTimeOffset.Now,
                 };
                 await resultMessageTable.ExecuteAsync(TableOperation.Insert(resultMessage));
             }
