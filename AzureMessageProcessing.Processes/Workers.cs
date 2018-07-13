@@ -136,7 +136,8 @@ namespace AzureMessageProcessing.Processes
                         typeof(FreshFruitPrintInfo)
                     }),
                     ["DnD Characters"] = new ConcurrentQueue<Type>(new Type[] {
-                        typeof(DnDCharactersConvertToJson)
+                        typeof(DnDCharactersConvertToJson),
+                        typeof(DnDCharactersStatsByClass)
                     }),
                     ["Hello World"] = new ConcurrentQueue<Type>(new Type[] {
                         typeof(HelloWorldDuplicate),

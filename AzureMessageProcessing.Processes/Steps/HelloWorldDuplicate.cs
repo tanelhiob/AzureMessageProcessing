@@ -10,6 +10,8 @@ namespace AzureMessageProcessing.Processes.Steps
     {
         public async Task<PipelineMessage> ProcessAsync(PipelineMessage message, TraceWriter traceWriter)
         {
+            traceWriter.Warning("Appending strings to themselves");
+
             var lines = message.Body.Split(new string[] { Environment.NewLine }, StringSplitOptions.None);
 
             var sb = new StringBuilder();
