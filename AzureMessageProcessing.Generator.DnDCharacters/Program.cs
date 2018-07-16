@@ -9,7 +9,8 @@ namespace AzureMessageProcessing.Generator.DnDCharacters
             var generator = new DnDGenerator("DnD Characters")
             {
                 IntervalInMilliseconds = 200,
-                NumberOfMessages = -1
+                NumberOfItemsInMessage = 100,
+                NumberOfMessages = 1
             };
 
             generator.RunAsync().Wait();

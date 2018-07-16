@@ -8,8 +8,8 @@ namespace AzureMessageProcessing.Generator.FreshFruit
         {
             var generator = new FruitGenerator("FreshFruits")
             {
-                NumberOfItemsInMessage = 2000,
-                NumberOfMessages = -1
+                NumberOfItemsInMessage = 100,
+                NumberOfMessages = 10
             };
 
             generator.RunAsync().Wait();
