@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using AzureMessageProcessing.Core.Models;
@@ -15,35 +16,52 @@ namespace AzureMessageProcessing.Processes
 {
     public static class Workers
     {
-        [FunctionName("OnRamp")]
-        public static async Task OnRampMessage(
-            [QueueTrigger("onramp")] QueueMessage message,
-            [Queue("consumption")] CloudQueue consumptionQueue,
-            [Queue("dedicated")] CloudQueue dedicatedQueue,
+        private const string _consuptionQueueName = "consumption";
+        private const string _dedicatedQueueName = "dedicated";
+        private const string _onRampQueueName = "onramp";
+        private const string _blobStorageName = "blob-storage";
+        private const string _resultMessagesTableName = "resultmessages";
+
+        private const string _freshFruitsSource = "FreshFruits";
+        private const string _dndCharactersSource = "DnD Characters";
+        private const string _helloWorldSource = "Hello World";
+
+        private readonly static Dictionary<string, string> _messageQueueMap = new Dictionary<string, string>
+        {
+            [_dndCharactersSource] = _consuptionQueueName,
+            [_helloWorldSource] = _consuptionQueueName,
+            [_freshFruitsSource] = _dedicatedQueueName,
+        };
+
+        [FunctionName(nameof(OnRamp))]
+        public static async Task OnRamp(
+            [QueueTrigger(_onRampQueueName)] QueueMessage message,
+            [Queue(_consuptionQueueName)] CloudQueue consumptionQueue,
+            [Queue(_dedicatedQueueName)] CloudQueue dedicatedQueue,
             TraceWriter traceWriter)
         {
             await PushMessageToCorrectQueueAsync(message, consumptionQueue, dedicatedQueue);
         }
 
-        [FunctionName("ProcessorForConsumption")]
+        [FunctionName(nameof(ProcessorForConsumption))]
         public static async Task ProcessorForConsumption(
-            [QueueTrigger("consumption")] QueueMessage message,
-            [Blob("blob-storage")] CloudBlobContainer blobContainer,
-            [Queue("consumption")] CloudQueue consumptionQueue,
-            [Queue("dedicated")] CloudQueue dedicatedQueue,
-            [Table("resultmessages")] CloudTable resultMessageTable,
+            [QueueTrigger(_consuptionQueueName)] QueueMessage message,
+            [Blob(_blobStorageName)] CloudBlobContainer blobContainer,
+            [Queue(_consuptionQueueName)] CloudQueue consumptionQueue,
+            [Queue(_dedicatedQueueName)] CloudQueue dedicatedQueue,
+            [Table(_resultMessagesTableName)] CloudTable resultMessageTable,
             TraceWriter traceWriter)
         {
             await ProcessStep(message, blobContainer, consumptionQueue, dedicatedQueue, resultMessageTable, traceWriter);
         }
 
-        [FunctionName("ProcessorForDedicated")]
+        [FunctionName(nameof(ProcessorForDedicated))]
         public static async Task ProcessorForDedicated(
-            [QueueTrigger("dedicated")] QueueMessage message,
-            [Blob("blob-storage")] CloudBlobContainer blobContainer,
-            [Queue("consumption")] CloudQueue consumptionQueue,
-            [Queue("dedicated")] CloudQueue dedicatedQueue,
-            [Table("resultmessages")] CloudTable resultMessageTable,
+            [QueueTrigger(_dedicatedQueueName)] QueueMessage message,
+            [Blob(_blobStorageName)] CloudBlobContainer blobContainer,
+            [Queue(_consuptionQueueName)] CloudQueue consumptionQueue,
+            [Queue(_dedicatedQueueName)] CloudQueue dedicatedQueue,
+            [Table(_resultMessagesTableName)] CloudTable resultMessageTable,
             TraceWriter traceWriter)
         {
             await ProcessStep(message, blobContainer, consumptionQueue, dedicatedQueue, resultMessageTable, traceWriter);
@@ -54,9 +72,20 @@ namespace AzureMessageProcessing.Processes
             CloudQueue consumptionQueue,
             CloudQueue dedicatedQueue)
         {
-            if (message.From == "FreshFruits")
+            if (_messageQueueMap.TryGetValue(message.From, out string source))
             {
-                await dedicatedQueue.AddMessageAsync(new CloudQueueMessage(JsonConvert.SerializeObject(message)));
+                if (source == _dedicatedQueueName)
+                {
+                    await dedicatedQueue.AddMessageAsync(new CloudQueueMessage(JsonConvert.SerializeObject(message)));
+                }
+                else if (source == _consuptionQueueName)
+                {
+                    await consumptionQueue.AddMessageAsync(new CloudQueueMessage(JsonConvert.SerializeObject(message)));
+                }
+                else
+                {
+                    throw new NotImplementedException();
+                }
             }
             else
             {
@@ -85,7 +114,7 @@ namespace AzureMessageProcessing.Processes
             if (step != null)
             {
                 var nextPipelineMessage = await step.ProcessAsync(pipelineMessage, traceWriter);
-                nextPipelineMessage.Id = Guid.NewGuid(); // TODO don't give new id, re-use same blob for multiple steps?
+                nextPipelineMessage.Id = Guid.NewGuid();
 
                 nextPipelineMessage.NextStep++;
 
@@ -130,16 +159,16 @@ namespace AzureMessageProcessing.Processes
             {
                 var stepMaps = new ConcurrentDictionary<string, ConcurrentQueue<Type>>
                 {
-                    ["FreshFruits"] = new ConcurrentQueue<Type>(new Type[] {
+                    [_freshFruitsSource] = new ConcurrentQueue<Type>(new Type[] {
                         typeof(FreshFruitPrintInfo),
                         typeof(FreshFruitGetWithMaxCrates),
                         typeof(FreshFruitPrintInfo)
                     }),
-                    ["DnD Characters"] = new ConcurrentQueue<Type>(new Type[] {
+                    [_freshFruitsSource] = new ConcurrentQueue<Type>(new Type[] {
                         typeof(DnDCharactersConvertToJson),
                         typeof(DnDCharactersStatsByClass)
                     }),
-                    ["Hello World"] = new ConcurrentQueue<Type>(new Type[] {
+                    [_helloWorldSource] = new ConcurrentQueue<Type>(new Type[] {
                         typeof(HelloWorldDuplicate),
                         typeof(HelloWorldDuplicate),
                         typeof(HelloWorldDuplicate),
@@ -148,9 +177,14 @@ namespace AzureMessageProcessing.Processes
                     })
                 };
 
-                if (!stepMaps.TryGetValue(processName, out var stepMap)) { throw new Exception($"Steps for process '{processName}' are not configured."); }
-
-                return stepMap;
+                if (stepMaps.TryGetValue(processName, out var stepMap))
+                {
+                    return stepMap;
+                }
+                else
+                {
+                    throw new Exception($"Steps for process '{processName}' are not configured.");
+                }
             }
 
             IStep SelectStep(PipelineMessage message)
