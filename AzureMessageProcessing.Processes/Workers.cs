@@ -172,7 +172,6 @@ namespace AzureMessageProcessing.Processes
                         typeof(HelloWorldDuplicate),
                         typeof(HelloWorldDuplicate),
                         typeof(HelloWorldDuplicate),
-                        typeof(HelloWorldDuplicate),
                         typeof(HelloWorldDuplicate)
                     })
                 };

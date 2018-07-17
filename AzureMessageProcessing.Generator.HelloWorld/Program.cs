@@ -9,8 +9,8 @@ namespace AzureMessageProcessing.Generator.HelloWorld
             var generator = new HelloWorldGenerator("Hello World")
             {
                 IntervalInMilliseconds = 1000,
-                NumberOfItemsInMessage = 50,
-                NumberOfMessages = -1
+                NumberOfItemsInMessage = 100,
+                NumberOfMessages = 10
             };
 
             generator.RunAsync().Wait();
